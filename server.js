@@ -141,6 +141,10 @@ http.createServer(function(req, res) {
         uri = '/node_modules/socket.io/node_modules/socket.io-client/socket.io.js';
     }
 
+    if(uri == '/') {
+        uri = 'client.html';
+    }
+
     var filename = path.join(process.cwd(), uri);
     fs.exists(filename, function(exists) {
         if(!exists || uri.indexOf(".") == -1) {
