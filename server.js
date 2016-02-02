@@ -1,4 +1,5 @@
-var spotify = require('spotify-node-applescript');
+var spotify = require('./spotify-web-helper');
+spotify.init();
 
 var wishes = [];
 var currentSong = null;
@@ -53,8 +54,6 @@ function deleteWish(wish) {
 function skip() {
     if(wishes.length > 0) {
         nextSong();
-    } else {
-        spotify.next();
     }
 }
 
@@ -80,12 +79,6 @@ function nextSong() {
         console.log("No Songs in Wishlist");
     }
 
-    // Update currentSong
-    currentSong = null;
-    setTimeout(function () {
-        updateCurrentSong();
-    }, 500);
-
     // Send Wishlist
     io.emit("wishAdded", wishes);
 }
@@ -94,39 +87,37 @@ function nextSong() {
  * Fetches the current song
  */
 function updateCurrentSong() {
-    spotify.getTrack(function(err, track) {
-        if(track != undefined && track != null) {
-            currentSong = track;
-            io.emit('currentSongInfo', currentSong);
-        } else {
-            console.log("Unable to get Song-Info.");
-        }
-    });
+    var track = spotify.getTrack();
+
+    if(track != undefined && track != null) {
+        currentSong = track;
+        io.emit('currentSongInfo', currentSong);
+    } else {
+        console.log("Unable to get Song-Info.");
+    }
 }
 
 
-
-
-// Start new Track when the current ends
-setInterval(function () {
-    spotify.getState(function(err, state){
-        if(state != undefined && currentSong != null) {
-            var currentPos = state.position;
-            var currentMax = Math.floor(currentSong.duration/1000);
-
-            if(currentPos == currentMax-1) {
-                nextSong();
-            }
-        }
-    });
-}, 200);
-
-
-
-// Update Song sometimes
-setInterval(function () {
+/**
+ * Updates the current song and starts the next song if necessary
+ *
+ * @param status
+ */
+function statusChanged(status) {
     updateCurrentSong();
-}, 2000);
+
+    if(status && status.playing_position && status.track && status.track.length) {
+        var currentPos = status.playing_position;
+        var currentMax = status.track.length;
+
+        if(currentPos >= currentMax) {
+            nextSong();
+        }
+    }
+}
+
+// Register for the event
+spotify.onStatusChange(statusChanged);
 
 
 
