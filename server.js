@@ -12,6 +12,7 @@ function addWish(wish) {
     if(!inWishlist(wish)) {
         wishes.push(wish);
         console.log("Wish added: " + wish);
+        return;
     }
     console.log("Song already wished: " + wish);
 }
@@ -26,6 +27,7 @@ function addAdminWish(wish) {
     if(!inWishlist(wish)) {
         wishes.unshift(wish);
         console.log("Admin-Wish added: " + wish);
+        return;
     }
     console.log("Song already wished: " + wish);
 }
@@ -188,7 +190,7 @@ io.sockets.on('connection', function (socket) {
     socket.on('deleteWish', function (wish) {
         deleteWish(wish);
         io.emit("wishAdded", wishes);
-    })
+    });
 
     socket.on('play', function () {
         spotify.play();
