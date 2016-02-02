@@ -1,0 +1,135 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" ng-app="SpotifyPartyClient">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <link rel="apple-touch-icon" sizes="72x72" href="images/icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="images/icon-114x114.png">
+    <link rel="apple-touch-icon" href="images/icon-57x57.png">
+
+    <title>Wünsch dir was</title>
+    <script type="text/javascript" src="bower_components/angular/angular.min.js"></script>
+    <script type="text/javascript" src="scripts/socket.io.js"></script>
+
+    <script type="text/javascript" src="scripts/app.js"></script>
+    <script type="text/javascript" src="scripts/controller.js"></script>
+    <script type="text/javascript" src="scripts/socket_factory.js"></script>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: "Helvetica Neue Light", "Lucida Grande", "Calibri", "Arial", sans-serif;
+        }
+
+        .currentPlayback {
+            background-color: #333333;
+            color: #fff;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .search {
+            padding: 20px;
+        }
+
+        .results .result,
+        .wishes .wish{
+            position: relative;
+            padding: 14px;
+            height: 36px;
+        }
+
+        .results .result:nth-child(odd),
+        .wishes .wish:nth-child(odd),
+        .results .result:nth-of-type(2n+1),
+        .wishes .wish:nth-of-type(2n+1) {
+            background-color: #eeeeee;
+        }
+
+        .results .result .cover,
+        .wishes .wish .cover{
+            margin: -14px 20px -14px -14px;
+            float: left;
+        }
+
+        .results .result .artist,
+        .results .result .song,
+        .wishes .wish .artist,
+        .wishes .wish .song{
+            margin-right: 40px;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+
+        .results .result .play,
+        .wishes .wish .delete {
+            font-size: 30px;
+            position: absolute;
+            right: 20px;
+            top:14px;
+            cursor: pointer;
+        }
+
+        input[type="text"] {
+            box-sizing: border-box;
+            width: 100%;
+            font-size: 14px;
+            padding: 10px 14px 10px 14px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .title {
+            margin-top: 20px;
+            font-size: 18px;
+            text-align: center;
+        }
+
+        .admin .play,
+        .admin .pause,
+        .admin .skip {
+            background-color: #ccc;
+            border-radius: 5px;
+            margin: 10px 20px 10px 20px;
+            padding: 10px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body ng-controller="controller">
+<div class="currentPlayback">
+    Gerade läuft:<br /> {{currentSong.artist}} - {{currentSong.name}}
+</div>
+<div class="search">
+    <input type="text" ng-model="searchQuery" ng-keyup="search(searchQuery)" placeholder="Wünsch dir was" />
+</div>
+
+<div class="results">
+    <div class="result" ng-repeat="result in results">
+        <div class="cover"><img ng-src="{{result.album.images[2].url}}"/></div>
+        <div class="artist" ng-bind="result.artists[0].name"></div>
+        <div class="song" ng-bind="result.name"></div>
+        <div class="play" ng-click="wish(result.uri)">+</div>
+    </div>
+</div>
+
+<div class="wishes">
+    <div class="title">Aktuelle Wunschliste</div>
+    <div class="wish" ng-repeat="wish in getWishList()">
+        <div class="cover"><img ng-src="{{wish.album.images[2].url}}"/></div>
+        <div class="artist">{{wish.artists[0].name}}</div>
+        <div class="song">{{wish.name}}</div>
+        <div class="delete" ng-show="admin" ng-click="deleteWish(wish.uri)">x</div>
+    </div>
+</div>
+
+<div class="admin" ng-show="admin">
+    <div class="title">Administration</div>
+    <div class="play" ng-click="play()">Play</div>
+    <div class="pause" ng-click="pause()">Pause</div>
+    <div class="skip" ng-click="skip()">Skip</div>
+</div>
+</body>
+</html>
