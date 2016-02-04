@@ -107,8 +107,8 @@ function statusChanged(status) {
     updateCurrentSong();
 
     if(status && status.playing_position && status.track && status.track.length) {
-        var currentPos = status.playing_position;
-        var currentMax = status.track.length;
+        var currentPos = Math.round(status.playing_position);
+        var currentMax = Math.round(status.track.length);
 
         if(currentPos >= currentMax) {
             nextSong();

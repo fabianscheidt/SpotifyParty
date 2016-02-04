@@ -65,7 +65,10 @@ var getJson = function (host, path, port, params, headers) {
         response.on("end", function () {
             result = JSON.parse(result);
             callback(result);
-        })
+        });
+    }).on("error", function (err) {
+        callback(err);
+        console.log("Some error");
     });
 
     return {
@@ -129,7 +132,7 @@ exports.init = function() {
         var params = {
             oauth: oAuthToken,
             csrf: csrfToken,
-            returnafter: 59,
+            returnafter: 5,
             returnon: returnon
         };
 
