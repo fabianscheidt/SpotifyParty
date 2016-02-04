@@ -1,6 +1,6 @@
 app.factory('ws', [ '$rootScope', function ($rootScope) {
     'use strict';
-    var socket = io.connect('http://localhost:5000');
+    var socket = io.connect('http://zoch.fabian-scheidt.de:5000');
 
     return {
         on: function (event, callback) {
