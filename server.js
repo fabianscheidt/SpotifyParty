@@ -106,11 +106,11 @@ function updateCurrentSong() {
 function statusChanged(status) {
     updateCurrentSong();
 
-    if(status && status.playing_position && status.track && status.track.length) {
+    if(status && typeof status.playing_position !== "undefined" && status.track && status.track.length) {
         var currentPos = Math.round(status.playing_position);
         var currentMax = Math.round(status.track.length);
 
-        if(currentPos >= currentMax) {
+        if(currentPos >= currentMax || (currentPos == 0 && !status.playing)) {
             nextSong();
         }
     }
