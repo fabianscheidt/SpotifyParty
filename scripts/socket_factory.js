@@ -1,6 +1,10 @@
 app.factory('ws', [ '$rootScope', function ($rootScope) {
     'use strict';
-    var socket = io.connect('http://zoch.fabian-scheidt.de:5000');
+
+    if (!window.location.origin) {
+        window.location.origin = window.location.protocol + "//" + window.location.hostname + (window.location.port ? ':' + window.location.port: '');
+    }
+    var socket = io.connect(window.location.origin);
 
     return {
         on: function (event, callback) {

@@ -120,54 +120,25 @@ function statusChanged(status) {
 spotify.onStatusChange(statusChanged);
 
 
+// Server
+var http = require('http');
+var express = require('express');
+var app = express();
+
+// Create Server and start listening
+var server = http.createServer(app);
+server.listen(1337);
 
 // File Server
-var http = require('http'),
-    url = require('url'),
-    path = require('path'),
-    fs = require('fs');
-var mimeTypes = {
-    "html": "text/html",
-    "jpeg": "image/jpeg",
-    "jpg": "image/jpeg",
-    "png": "image/png",
-    "js": "text/javascript",
-    "css": "text/css"};
-
-http.createServer(function(req, res) {
-    var uri = url.parse(req.url).pathname;
-
-    if(uri == '/scripts/socket.io.js') {
-        uri = '/node_modules/socket.io/node_modules/socket.io-client/socket.io.js';
-    }
-
-    if(uri == '/') {
-        uri = 'client.html';
-    }
-
-    var filename = path.join(process.cwd(), uri);
-    fs.exists(filename, function(exists) {
-        if(!exists || uri.indexOf(".") == -1) {
-            console.log("not exists: " + filename);
-            res.writeHead(200, {'Content-Type': 'text/plain'});
-            res.write('404 Not Found\n');
-            res.end();
-            return;
-        }
-        var mimeType = mimeTypes[path.extname(filename).split(".")[1]];
-        res.writeHead(200, mimeType);
-
-        var fileStream = fs.createReadStream(filename);
-        fileStream.pipe(res);
-
-    }); //end path.exists
-}).listen(1337);
-
+app.get('/', function (req, res) {
+    res.sendFile(__dirname + '/client.html');
+});
+app.use(express.static(__dirname));
 
 
 // Start Socket-Server
-var io = require('socket.io').listen(5000);
-io.sockets.on('connection', function (socket) {
+var io = require('socket.io').listen(server);
+io.on('connection', function (socket) {
     console.log("Connection!");
     socket.emit('currentSongInfo', currentSong);
     socket.emit("wishAdded", wishes);
