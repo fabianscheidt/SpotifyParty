@@ -4,7 +4,7 @@ app.controller('controller', function ($scope, ws, $http) {
     $scope.wishMap      = {};
     $scope.searchQuery  = "";
     $scope.results      = [];
-    $scope.admin        = location.search.split('admin=')[1] == 'admin';
+    $scope.admin        = location.search.split('admin=')[1] === 'admin';
     console.log($scope.admin);
 
     /**
@@ -14,7 +14,7 @@ app.controller('controller', function ($scope, ws, $http) {
      */
     $scope.search = function(query) {
         query = query.replace(" ", "+");
-        url = "https://api.spotify.com/v1/search?q=" + query + "&type=track&market=DE";
+        var url = "https://api.spotify.com/v1/search?q=" + query + "&type=track&market=DE";
         $http.get(url)
         .success(function(data) {
             $scope.results = data.tracks.items;
@@ -28,12 +28,12 @@ app.controller('controller', function ($scope, ws, $http) {
      */
     $scope.mapSongInfo = function(song) {
         song = song.replace("spotify:track:", "");
-        url = "https://api.spotify.com/v1/tracks/" + song + "?market=DE";
+        var url = "https://api.spotify.com/v1/tracks/" + song + "?market=DE";
         $http.get(url)
         .success(function(data) {
             $scope.wishMap["spotify:track:" + song] = data;
         });
-    }
+    };
 
     /**
      * Returns the current wishlist-metadata
@@ -42,13 +42,14 @@ app.controller('controller', function ($scope, ws, $http) {
      */
     $scope.getWishList = function () {
         var result = [];
-        for(i in $scope.wishes) {
+        for(var i in $scope.wishes) {
+            if(!$scope.wishes.hasOwnProperty(i)) continue;
             if($scope.wishMap[$scope.wishes[i]]) {
                 result.push($scope.wishMap[$scope.wishes[i]]);
             }
         }
         return result;
-    }
+    };
 
     /**
      * Adds a wish
@@ -71,7 +72,7 @@ app.controller('controller', function ($scope, ws, $http) {
      */
     $scope.deleteWish = function (wish) {
         ws.emit('deleteWish', wish);
-    }
+    };
 
 
     /**
@@ -106,7 +107,8 @@ app.controller('controller', function ($scope, ws, $http) {
     ws.on('wishAdded', function(wishes) {
         $scope.wishes = wishes;
 
-        for(i in wishes) {
+        for(var i in wishes) {
+            if(!wishes.hasOwnProperty(i)) continue;
             $scope.mapSongInfo(wishes[i]);
         }
     });
