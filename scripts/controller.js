@@ -63,6 +63,7 @@ app.controller('controller', function ($scope, ws, $http) {
             ws.emit('addWish', wish);
         }
         alert("Alles Klar! Dein Wunsch ist angekommen!");
+        $scope.searchQuery = "";
     };
 
     /**
