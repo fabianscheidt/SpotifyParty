@@ -103,7 +103,7 @@
     Gerade läuft:<br /> {{currentSong.artist}} - {{currentSong.name}}
 </div>
 <div class="search">
-    <input type="text" ng-model="searchQuery" ng-keyup="search(searchQuery)" placeholder="Wünsch dir was" />
+    <input type="text" ng-model="searchQuery" ng-model-options="{ debounce: 100 }" placeholder="Wünsch dir was" />
 </div>
 
 <div class="results">

@@ -81,6 +81,17 @@ app.controller('controller', function ($scope, ws, $http) {
     $scope.pause = function() { ws.emit('pause'); };
     $scope.skip  = function() { ws.emit('skip');  };
 
+    /**
+     * Perform search on query-changes
+     */
+    $scope.$watch('searchQuery', function () {
+        if($scope.searchQuery === "") {
+            $scope.results = [];
+        } else {
+            $scope.search($scope.searchQuery);
+        }
+    });
+
 
     /**
      * Update Current Song
