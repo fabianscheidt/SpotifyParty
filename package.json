@@ -4,6 +4,7 @@
   "description": "",
   "main": "server.js",
   "dependencies": {
+    "angular": "^1.6.2",
     "bower": "^1.7.7",
     "express": "^4.14.1",
     "socket.io": "^1.7.3"

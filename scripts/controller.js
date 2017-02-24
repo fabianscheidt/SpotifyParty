@@ -15,9 +15,11 @@ app.controller('controller', function ($scope, ws, $http) {
     $scope.search = function(query) {
         query = query.replace(" ", "+");
         var url = "https://api.spotify.com/v1/search?q=" + query + "&type=track&market=DE";
+        console.log($http.get(url));
         $http.get(url)
-        .success(function(data) {
-            $scope.results = data.tracks.items;
+        .then(function(res) {
+            if(!res.data) return;
+            $scope.results = res.data.tracks.items;
         });
     };
 
@@ -30,8 +32,9 @@ app.controller('controller', function ($scope, ws, $http) {
         song = song.replace("spotify:track:", "");
         var url = "https://api.spotify.com/v1/tracks/" + song + "?market=DE";
         $http.get(url)
-        .success(function(data) {
-            $scope.wishMap["spotify:track:" + song] = data;
+        .then(function(res) {
+            if(!res.data) return;
+            $scope.wishMap["spotify:track:" + song] = res.data;
         });
     };
 
