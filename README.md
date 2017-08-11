@@ -10,6 +10,9 @@ Download and install [NodeJS](https://nodejs.org/). Download the dependencies by
   npm install
   ```
 
+Create an applicatication on the [Spotify Website](https://developer.spotify.com/my-applications/). Enter the
+Client ID and the Client Secret in `server.js`.
+
 ## Usage
 
 Open the Spotify-application on your computer and start the server by running the following command:
