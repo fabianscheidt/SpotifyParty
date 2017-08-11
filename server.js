@@ -1,3 +1,7 @@
+var clientId = "YOUR-CLIENT-ID-HERE";
+var clientSecret = "YOUR-CLIENT-SECRET-HERE";
+
+var https = require('https');
 var spotify = require('./spotify-web-helper');
 spotify.init();
 
@@ -116,6 +120,44 @@ function statusChanged(status) {
     }
 }
 
+/**
+ * Requests an access token fot the client id and secret
+ */
+function requestAccessToken(callback) {
+    var data = "grant_type=client_credentials";
+        var authHeader = "Basic " + Buffer.from(clientId + ":" + clientSecret).toString('base64');
+        var options = {
+            host: 'accounts.spotify.com',
+            path: '/api/token',
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'Content-Length': Buffer.byteLength(data),
+                'Authorization': authHeader
+            },
+            port: 443,
+            rejectUnauthorized: false
+        };
+        var post_req = https.request(options, function(res) {
+            var result = '';
+
+            res.setEncoding('utf8');
+            res.on('data', function (chunk) {
+                result += chunk;
+            });
+            res.on('end', function () {
+                result = JSON.parse(result);
+                if (result && result.access_token) {
+                    callback(result.access_token);
+                }
+            });
+        });
+
+        // post the data
+        post_req.write(data);
+        post_req.end();
+}
+
 // Register for the event
 spotify.onStatusChange(statusChanged);
 
@@ -141,7 +183,13 @@ var io = require('socket.io').listen(server);
 io.on('connection', function (socket) {
     console.log("Connection!");
     socket.emit('currentSongInfo', currentSong);
-    socket.emit("wishAdded", wishes);
+
+    socket.on('token', function() {
+        requestAccessToken(function(token) {
+            socket.emit('token', token);
+            socket.emit("wishAdded", wishes);
+        });
+    });
 
     socket.on('addWish', function(wish) {
         addWish(wish);

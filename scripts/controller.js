@@ -5,7 +5,7 @@ app.controller('controller', function ($scope, ws, $http) {
     $scope.searchQuery  = "";
     $scope.results      = [];
     $scope.admin        = location.search.split('admin=')[1] === 'admin';
-    console.log($scope.admin);
+    $scope.accessToken  = "";
 
     /**
      * Performs a search for Spotify-Songs and saves the results in $scope.results
@@ -15,8 +15,10 @@ app.controller('controller', function ($scope, ws, $http) {
     $scope.search = function(query) {
         query = query.replace(" ", "+");
         var url = "https://api.spotify.com/v1/search?q=" + query + "&type=track&market=DE";
-        console.log($http.get(url));
-        $http.get(url)
+        var options = {
+            headers: { "Authorization": "Bearer " + $scope.accessToken }
+        }
+        $http.get(url, options)
         .then(function(res) {
             if(!res.data) return;
             $scope.results = res.data.tracks.items;
@@ -31,7 +33,10 @@ app.controller('controller', function ($scope, ws, $http) {
     $scope.mapSongInfo = function(song) {
         song = song.replace("spotify:track:", "");
         var url = "https://api.spotify.com/v1/tracks/" + song + "?market=DE";
-        $http.get(url)
+        var options = {
+            headers: { "Authorization": "Bearer " + $scope.accessToken }
+        }
+        $http.get(url, options)
         .then(function(res) {
             if(!res.data) return;
             $scope.wishMap["spotify:track:" + song] = res.data;
@@ -96,6 +101,14 @@ app.controller('controller', function ($scope, ws, $http) {
             $scope.search($scope.searchQuery);
         }
     });
+
+    /**
+     * Fetch an API-token
+     */
+    ws.emit('token');
+    ws.on('token', function(token) {
+        $scope.accessToken = token;
+    })
 
 
     /**
