@@ -4,6 +4,7 @@ var https = require('https');
 var PORT = 4370;
 var DEFAULT_RETURN_ON = ['login', 'logout', 'play', 'pause', 'error', 'ap'];
 var ORIGIN_HEADER = {'Origin': 'https://open.spotify.com'};
+var FAKE_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36';
 
 // Store tokens here
 var oAuthToken = '';
@@ -31,6 +32,7 @@ var getJson = function (host, path, port, params, headers) {
     port = port || 443;
     params = params || {};
     headers = headers || {};
+    headers['User-Agent'] = FAKE_USER_AGENT;
     var callback = function (result) {};
 
     // Append URL-params
