@@ -7,7 +7,7 @@ var statusChangeCallbacks = [];
 var currentTrack = null;
 
 /**
- * Todo...
+ * Initializes the poll for status changes
  */
 exports.init = function() {
 
@@ -52,7 +52,7 @@ exports.init = function() {
  * Acts like a press on the play-button
  */
 exports.play = function () {
-    spotify.play();
+    spotify.unpause();
 };
 
 
