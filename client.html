@@ -64,11 +64,17 @@
         }
 
         .results .result .play,
-        .wishes .wish .delete {
-            font-size: 30px;
+        .wishes .wish .votes {
             position: absolute;
             right: 20px;
-            top:14px;
+            top: 0;
+            line-height: 64px;
+            font-size: 24px;
+        }
+
+        .results .result .play,
+        .wishes .wish .votes span {
+            font-size: 30px;
             cursor: pointer;
         }
 
@@ -117,11 +123,15 @@
 
 <div class="wishes">
     <div class="title">Aktuelle Wunschliste</div>
-    <div class="wish" ng-repeat="wish in getWishList()">
-        <div class="cover"><img ng-src="{{wish.album.images[2].url}}"/></div>
-        <div class="artist">{{wish.artists[0].name}}</div>
-        <div class="song">{{wish.name}}</div>
-        <div class="delete" ng-show="admin" ng-click="deleteWish(wish.uri)">x</div>
+    <div class="wish" ng-repeat="wish in wishes | orderBy: '-votes'">
+        <div class="cover"><img ng-src="{{ getSongInfo(wish.song).album.images[2].url}}"/></div>
+        <div class="artist">{{ getSongInfo(wish.song).artists[0].name }}</div>
+        <div class="song">{{ getSongInfo(wish.song).name }}</div>
+        <div class="votes">
+            {{ wish.votes }}
+            <span ng-click="$parent.wish(wish.song)">+</span>
+            <span ng-show="admin" ng-click="deleteWish(wish.song)">x</span>
+        </div>
     </div>
 </div>
 

@@ -26,8 +26,8 @@ exports.init = function() {
             // Fetch current track
             if(res && res.track) {
                 currentTrack = {
-                    artist:res.track.artist_resource.name,
-                    name:res.track.track_resource.name
+                    artist: res.track.artist_resource ? res.track.artist_resource.name : '',
+                    name: res.track.track_resource ? res.track.track_resource.name : ''
                 };
             }
 

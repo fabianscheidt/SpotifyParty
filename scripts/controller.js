@@ -31,7 +31,7 @@ app.controller('controller', function ($scope, ws, $http) {
      * @param song
      */
     $scope.mapSongInfo = function(song) {
-        song = song.replace("spotify:track:", "");
+        song = song.song.replace("spotify:track:", "");
         var url = "https://api.spotify.com/v1/tracks/" + song + "?market=DE";
         var options = {
             headers: { "Authorization": "Bearer " + $scope.accessToken }
@@ -44,19 +44,13 @@ app.controller('controller', function ($scope, ws, $http) {
     };
 
     /**
-     * Returns the current wishlist-metadata
+     * Returns the song info for the provided song
      *
-     * @returns {Array}
+     * @param song
+     * @returns {*}
      */
-    $scope.getWishList = function () {
-        var result = [];
-        for(var i in $scope.wishes) {
-            if(!$scope.wishes.hasOwnProperty(i)) continue;
-            if($scope.wishMap[$scope.wishes[i]]) {
-                result.push($scope.wishMap[$scope.wishes[i]]);
-            }
-        }
-        return result;
+    $scope.getSongInfo = function (song) {
+        return $scope.wishMap[song];
     };
 
     /**
@@ -65,6 +59,21 @@ app.controller('controller', function ($scope, ws, $http) {
      * @param wish
      */
     $scope.wish = function (wish) {
+        // Check history
+        if (localStorage && !$scope.admin) {
+            var history;
+            history = localStorage.getItem('wish_history');
+            history = history ? JSON.parse(history) : [];
+            console.log(history);
+            for (const i in history) {
+                if (!history.hasOwnProperty(i)) continue;
+                if (history[i].song === wish && history[i].date < (new Date()) + 1000*60*60) {
+                    alert("Diesen Song hast du dir bereits gewünscht...");
+                    return;
+                }
+            }
+        }
+
         if($scope.admin) {
             ws.emit('addAdminWish', wish);
         } else {
@@ -72,6 +81,16 @@ app.controller('controller', function ($scope, ws, $http) {
         }
         alert("Alles Klar! Dein Wunsch ist angekommen!");
         $scope.searchQuery = "";
+
+        // Add wish to history
+        if (localStorage) {
+            var history;
+            history = localStorage.getItem('wish_history');
+            history = history ? JSON.parse(history) : [];
+            history.push({ date: new Date(), song: wish });
+            history = JSON.stringify(history);
+            localStorage.setItem('wish_history', history);
+        }
     };
 
     /**
@@ -128,5 +147,8 @@ app.controller('controller', function ($scope, ws, $http) {
             if(!wishes.hasOwnProperty(i)) continue;
             $scope.mapSongInfo(wishes[i]);
         }
+        setTimeout(function () {
+            console.log($scope.wishes, $scope.wishMap);
+        }, 500)
     });
 });

@@ -1,5 +1,5 @@
-var clientId = "YOUR-CLIENT-ID-HERE";
-var clientSecret = "YOUR-CLIENT-SECRET-HERE";
+var clientId = "85128a8c51094125aa11f8c90e13fd1e";
+var clientSecret = "1bce9f1903104c1bbc1e12a71354c80b";
 
 var https = require('https');
 var spotify = require('./spotify-web-helper');
@@ -11,45 +11,49 @@ var currentSong = null;
 /**
  * Adds a song to the end of the wishlist
  *
- * @param wish String
+ * @param song String
  */
-function addWish(wish) {
-    if(!inWishlist(wish)) {
-        wishes.push(wish);
-        console.log("Wish added: " + wish);
+function addWish(song) {
+    var wish = getSongInWishlist(song);
+    if(!wish) {
+        wishes.push({ song: song, votes: 1 });
+        console.log("Wish added: " + song);
         return;
     }
-    console.log("Song already wished: " + wish);
+    wish.votes++;
+    console.log("Song already wished, added vote: " + song);
 }
 
 
 /**
  * Adds a song to the beginning of the wishlist
  *
- * @param wish String
+ * @param song String
  */
-function addAdminWish(wish) {
-    if(!inWishlist(wish)) {
-        wishes.unshift(wish);
-        console.log("Admin-Wish added: " + wish);
+function addAdminWish(song) {
+    var wish = getSongInWishlist(song);
+    if(!wish) {
+        wishes.push({ song: song, votes: 100 });
+        console.log("Admin-Wish added: " + song);
         return;
     }
-    console.log("Song already wished: " + wish);
+    wish.votes += 100;
+    console.log("Song already wished, added admin vote: " + song);
 }
 
-function inWishlist(wish) {
-    for(i in wishes) {
-        if(wishes[i] == wish) {
-            return true;
+function getSongInWishlist(song) {
+    for(var i in wishes) {
+        if(wishes[i].song === song) {
+            return wishes[i];
         }
     }
-    return false;
+    return null;
 }
 
 
-function deleteWish(wish) {
-    for(i in wishes) {
-        if(wishes[i] == wish) {
+function deleteWish(song) {
+    for(var i in wishes) {
+        if(wishes[i].song === song) {
             wishes.splice(i, 1);
         }
     }
@@ -69,15 +73,23 @@ function nextSong() {
     var nextSong;
 
     if(wishes.length > 0) {
-        // Get wish
-        nextSong = wishes.shift();
+        // Get wish with most votes
+        var nextWish;
+        for (var i in wishes) {
+            if(!nextWish || wishes[i].votes > nextWish.votes) {
+                nextWish = wishes[i];
+            }
+        }
 
         // Play Track
-        spotify.playTrack(nextSong);
+        spotify.playTrack(nextWish.song);
         spotify.play();
 
+        // Remove from wishlist
+        deleteWish(nextWish.song);
+
         // Log
-        console.log("Started Song: " + nextSong);
+        console.log("Started Song: " + nextWish.song);
     } else {
         // No Songs in Wishlist
         console.log("No Songs in Wishlist");
