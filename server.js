@@ -152,10 +152,45 @@ const server = http.createServer(app);
 server.listen(1337);
 
 // File Server
-app.get('/', function (req, res) {
+app.get('/', (req, res) => {
     res.sendFile(__dirname + '/client.html');
 });
 app.use(express.static(__dirname));
+
+// Spotify authorization flow
+app.get('/authorize', (req, res) => {
+    const redirectUri = req.protocol + '://' + req.get('Host') + '/authorize-success';
+    spotify.setRedirectURI(redirectUri);
+    const scopes = ['user-read-private', 'user-read-email', 'user-read-playback-state'];
+    const authorizeURL = spotify.createAuthorizeURL(scopes);
+    res.redirect(302, authorizeURL);
+});
+
+app.get('/authorize-success', (req, res) => {
+    const code = req.query.code;
+    if (!code) {
+        res.status(400).send('No code provided');
+        return;
+    }
+
+    console.log('Received access code:', req.query.code);
+
+    spotify.authorizationCodeGrant(code).then((data) => {
+        const accessToken = data.body.access_token;
+        const refreshToken = data.body.refresh_token;
+        if (!accessToken || !refreshToken) {
+            res.status(401).send('Access token response is invalid');
+            return;
+        }
+        spotify.setAccessToken(accessToken);
+        spotify.setRefreshToken(refreshToken);
+        console.log('Received access and refresh token:', accessToken, refreshToken);
+        res.send('Done!');
+    }, (err) => {
+        console.error('Failed to receive access token', err);
+        res.status(401).send('Failed to receive access token');
+    });
+});
 
 
 // Start Socket-Server
