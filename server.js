@@ -161,7 +161,7 @@ app.use(express.static(__dirname));
 app.get('/authorize', (req, res) => {
     const redirectUri = req.protocol + '://' + req.get('Host') + '/authorize-success';
     spotify.setRedirectURI(redirectUri);
-    const scopes = ['user-read-private', 'user-read-email', 'user-read-playback-state'];
+    const scopes = ['user-read-private', 'user-read-email', 'user-read-playback-state', 'user-modify-playback-state'];
     const authorizeURL = spotify.createAuthorizeURL(scopes);
     res.redirect(302, authorizeURL);
 });
@@ -222,13 +222,11 @@ io.on('connection', (socket) => {
     });
 
     socket.on('play', () => {
-        // Todo...
-        // spotify.play();
+        spotify.play();
     });
 
     socket.on('pause', () => {
-        // Todo...
-        // spotify.pause();
+        spotify.pause();
     });
 
     socket.on('skip', () => {
