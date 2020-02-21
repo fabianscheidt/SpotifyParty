@@ -1,7 +1,8 @@
 const clientId = "85128a8c51094125aa11f8c90e13fd1e";
 const clientSecret = "1bce9f1903104c1bbc1e12a71354c80b";
 
-const https = require('https');
+const SpotifyWebApi = require('spotify-web-api-node');
+const spotify = new SpotifyWebApi({ clientId, clientSecret });
 
 const wishes = [];
 let currentSong = null;
@@ -129,38 +130,11 @@ function statusChanged(status) {
  * Requests an access token fot the client id and secret
  */
 function requestAccessToken(callback) {
-    const data = "grant_type=client_credentials";
-    const authHeader = "Basic " + Buffer.from(clientId + ":" + clientSecret).toString('base64');
-    const options = {
-        host: 'accounts.spotify.com',
-        path: '/api/token',
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'Content-Length': Buffer.byteLength(data),
-            'Authorization': authHeader
-        },
-        port: 443,
-        rejectUnauthorized: false
-    };
-    const post_req = https.request(options, (res) => {
-        let result = '';
-
-        res.setEncoding('utf8');
-        res.on('data', function (chunk) {
-            result += chunk;
-        });
-        res.on('end', function () {
-            result = JSON.parse(result);
-            if (result && result.access_token) {
-                callback(result.access_token);
-            }
-        });
+    spotify.clientCredentialsGrant().then((result) => {
+        if (result.body && result.body.access_token) {
+            callback(result.body.access_token);
+        }
     });
-
-    // post the data
-    post_req.write(data);
-    post_req.end();
 }
 
 // Register for the event
