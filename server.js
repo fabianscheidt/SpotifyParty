@@ -2,8 +2,6 @@ var clientId = "85128a8c51094125aa11f8c90e13fd1e";
 var clientSecret = "1bce9f1903104c1bbc1e12a71354c80b";
 
 var https = require('https');
-var spotify = require('./spotify-web-helper');
-spotify.init();
 
 var wishes = [];
 var currentSong = null;
@@ -82,8 +80,9 @@ function nextSong() {
         }
 
         // Play Track
-        spotify.playTrack(nextWish.song);
-        spotify.play();
+        // Todo...
+        // spotify.playTrack(nextWish.song);
+        // spotify.play();
 
         // Remove from wishlist
         deleteWish(nextWish.song);
@@ -103,7 +102,8 @@ function nextSong() {
  * Fetches the current song
  */
 function updateCurrentSong() {
-    var track = spotify.getTrack();
+    // Todo...
+    // var track = spotify.getTrack();
 
     if(track != undefined && track != null) {
         currentSong = track;
@@ -171,7 +171,8 @@ function requestAccessToken(callback) {
 }
 
 // Register for the event
-spotify.onStatusChange(statusChanged);
+// Todo...
+// spotify.onStatusChange(statusChanged);
 
 
 // Server
