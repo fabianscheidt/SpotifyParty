@@ -1,10 +1,10 @@
-var clientId = "85128a8c51094125aa11f8c90e13fd1e";
-var clientSecret = "1bce9f1903104c1bbc1e12a71354c80b";
+const clientId = "85128a8c51094125aa11f8c90e13fd1e";
+const clientSecret = "1bce9f1903104c1bbc1e12a71354c80b";
 
-var https = require('https');
+const https = require('https');
 
-var wishes = [];
-var currentSong = null;
+const wishes = [];
+let currentSong = null;
 
 /**
  * Adds a song to the end of the wishlist
@@ -12,7 +12,7 @@ var currentSong = null;
  * @param song String
  */
 function addWish(song) {
-    var wish = getSongInWishlist(song);
+    const wish = getSongInWishlist(song);
     if(!wish) {
         wishes.push({ song: song, votes: 1 });
         console.log("Wish added: " + song);
@@ -29,7 +29,7 @@ function addWish(song) {
  * @param song String
  */
 function addAdminWish(song) {
-    var wish = getSongInWishlist(song);
+    const wish = getSongInWishlist(song);
     if(!wish) {
         wishes.push({ song: song, votes: 100 });
         console.log("Admin-Wish added: " + song);
@@ -40,20 +40,14 @@ function addAdminWish(song) {
 }
 
 function getSongInWishlist(song) {
-    for(var i in wishes) {
-        if(wishes[i].song === song) {
-            return wishes[i];
-        }
-    }
-    return null;
+    return wishes.find(w => w.song === song) || null;
 }
 
 
 function deleteWish(song) {
-    for(var i in wishes) {
-        if(wishes[i].song === song) {
-            wishes.splice(i, 1);
-        }
+    const index = wishes.findIndex(w => w.song === song);
+    if (index > -1) {
+        wishes.splice(index, 1);
     }
 }
 
@@ -68,14 +62,12 @@ function skip() {
  * Plays the next song
  */
 function nextSong() {
-    var nextSong;
-
     if(wishes.length > 0) {
         // Get wish with most votes
-        var nextWish;
-        for (var i in wishes) {
-            if(!nextWish || wishes[i].votes > nextWish.votes) {
-                nextWish = wishes[i];
+        let nextWish;
+        for (const wish of wishes) {
+            if(!nextWish || wish.votes > nextWish.votes) {
+                nextWish = wish;
             }
         }
 
@@ -104,8 +96,9 @@ function nextSong() {
 function updateCurrentSong() {
     // Todo...
     // var track = spotify.getTrack();
+    const track = null;
 
-    if(track != undefined && track != null) {
+    if(track) {
         currentSong = track;
         io.emit('currentSongInfo', currentSong);
     } else {
@@ -123,10 +116,10 @@ function statusChanged(status) {
     updateCurrentSong();
 
     if(status && typeof status.playing_position !== "undefined" && status.track && status.track.length) {
-        var currentPos = Math.round(status.playing_position);
-        var currentMax = Math.round(status.track.length);
+        const currentPos = Math.round(status.playing_position);
+        const currentMax = Math.round(status.track.length);
 
-        if(currentPos >= currentMax || (currentPos == 0 && !status.playing)) {
+        if(currentPos >= currentMax || (currentPos === 0 && !status.playing)) {
             nextSong();
         }
     }
@@ -136,38 +129,38 @@ function statusChanged(status) {
  * Requests an access token fot the client id and secret
  */
 function requestAccessToken(callback) {
-    var data = "grant_type=client_credentials";
-        var authHeader = "Basic " + Buffer.from(clientId + ":" + clientSecret).toString('base64');
-        var options = {
-            host: 'accounts.spotify.com',
-            path: '/api/token',
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'Content-Length': Buffer.byteLength(data),
-                'Authorization': authHeader
-            },
-            port: 443,
-            rejectUnauthorized: false
-        };
-        var post_req = https.request(options, function(res) {
-            var result = '';
+    const data = "grant_type=client_credentials";
+    const authHeader = "Basic " + Buffer.from(clientId + ":" + clientSecret).toString('base64');
+    const options = {
+        host: 'accounts.spotify.com',
+        path: '/api/token',
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Content-Length': Buffer.byteLength(data),
+            'Authorization': authHeader
+        },
+        port: 443,
+        rejectUnauthorized: false
+    };
+    const post_req = https.request(options, (res) => {
+        let result = '';
 
-            res.setEncoding('utf8');
-            res.on('data', function (chunk) {
-                result += chunk;
-            });
-            res.on('end', function () {
-                result = JSON.parse(result);
-                if (result && result.access_token) {
-                    callback(result.access_token);
-                }
-            });
+        res.setEncoding('utf8');
+        res.on('data', function (chunk) {
+            result += chunk;
         });
+        res.on('end', function () {
+            result = JSON.parse(result);
+            if (result && result.access_token) {
+                callback(result.access_token);
+            }
+        });
+    });
 
-        // post the data
-        post_req.write(data);
-        post_req.end();
+    // post the data
+    post_req.write(data);
+    post_req.end();
 }
 
 // Register for the event
@@ -176,12 +169,12 @@ function requestAccessToken(callback) {
 
 
 // Server
-var http = require('http');
-var express = require('express');
-var app = express();
+const http = require('http');
+const express = require('express');
+const app = express();
 
 // Create Server and start listening
-var server = http.createServer(app);
+const server = http.createServer(app);
 server.listen(1337);
 
 // File Server
@@ -192,42 +185,44 @@ app.use(express.static(__dirname));
 
 
 // Start Socket-Server
-var io = require('socket.io').listen(server);
-io.on('connection', function (socket) {
+const io = require('socket.io').listen(server);
+io.on('connection', (socket) => {
     console.log("Connection!");
     socket.emit('currentSongInfo', currentSong);
 
-    socket.on('token', function() {
-        requestAccessToken(function(token) {
+    socket.on('token', () => {
+        requestAccessToken((token) => {
             socket.emit('token', token);
             socket.emit("wishAdded", wishes);
         });
     });
 
-    socket.on('addWish', function(wish) {
+    socket.on('addWish', (wish) => {
         addWish(wish);
         io.emit("wishAdded", wishes);
     });
 
-    socket.on('addAdminWish', function(wish) {
+    socket.on('addAdminWish', (wish) => {
         addAdminWish(wish);
         io.emit("wishAdded", wishes);
     });
 
-    socket.on('deleteWish', function (wish) {
+    socket.on('deleteWish', (wish) => {
         deleteWish(wish);
         io.emit("wishAdded", wishes);
     });
 
-    socket.on('play', function () {
-        spotify.play();
+    socket.on('play', () => {
+        // Todo...
+        // spotify.play();
     });
 
-    socket.on('pause', function() {
-        spotify.pause();
+    socket.on('pause', () => {
+        // Todo...
+        // spotify.pause();
     });
 
-    socket.on('skip', function () {
+    socket.on('skip', () => {
         skip();
     })
 });
