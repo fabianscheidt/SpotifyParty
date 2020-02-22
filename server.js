@@ -182,7 +182,8 @@ app.get('/authorize-success', (req, res) => {
         spotify.setAccessToken(accessToken);
         spotify.setRefreshToken(refreshToken);
         console.log('Received access and refresh token:', accessToken, refreshToken);
-        res.send('Done!');
+        const redirectUri = req.protocol + '://' + req.get('Host') + '/?admin=admin';
+        res.redirect(302, redirectUri);
     }, (err) => {
         console.error('Failed to receive access token', err);
         res.status(401).send('Failed to receive access token');
