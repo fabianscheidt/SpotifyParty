@@ -73,9 +73,7 @@ function nextSong() {
         }
 
         // Play Track
-        // Todo...
-        // spotify.playTrack(nextWish.song);
-        // spotify.play();
+        spotify.play({ uris: [ nextWish.song ] });
 
         // Remove from wishlist
         deleteWish(nextWish.song);
@@ -92,38 +90,39 @@ function nextSong() {
 }
 
 /**
- * Fetches the current song
+ * Polls playback state to notice changes in the current track and trigger playback of a new track.
  */
-function updateCurrentSong() {
-    // Todo...
-    // var track = spotify.getTrack();
-    const track = null;
-
-    if(track) {
-        currentSong = track;
-        io.emit('currentSongInfo', currentSong);
-    } else {
-        console.log("Unable to get Song-Info.");
-    }
-}
-
-
-/**
- * Updates the current song and starts the next song if necessary
- *
- * @param status
- */
-function statusChanged(status) {
-    updateCurrentSong();
-
-    if(status && typeof status.playing_position !== "undefined" && status.track && status.track.length) {
-        const currentPos = Math.round(status.playing_position);
-        const currentMax = Math.round(status.track.length);
-
-        if(currentPos >= currentMax || (currentPos === 0 && !status.playing)) {
-            nextSong();
+function pollPlaybackState() {
+    let lastUri;
+    setInterval(() => {
+        if (!spotify.getAccessToken()) {
+            return;
         }
-    }
+        spotify.getMyCurrentPlaybackState().then(res => {
+            if (!res || !res.body || !res.body.item) {
+                return;
+            }
+
+            // Emit the song info when the current song changes
+            const uri = res.body.item.uri;
+            if (uri !== lastUri) {
+                lastUri = uri;
+                currentSong = {
+                    name: res.body.item.name,
+                    artist: res.body.item.artists[0].name,
+                    uri: res.body.item.uri
+                };
+                console.log('New song found', currentSong);
+                io.emit('currentSongInfo', currentSong);
+            }
+
+            // Play the next song when the last playback is paused
+            if (!res.body.is_playing && res.body.progress_ms === 0 && wishes.length > 0) {
+                console.log('End of song. Playing next...');
+                nextSong();
+            }
+        });
+    }, 3000);
 }
 
 /**
@@ -137,10 +136,8 @@ function requestAccessToken(callback) {
     });
 }
 
-// Register for the event
-// Todo...
-// spotify.onStatusChange(statusChanged);
-
+// Start polling of the playback state
+pollPlaybackState();
 
 // Server
 const http = require('http');
